@@ -13,7 +13,7 @@ function App() {
 
   // 1. UPDATE THIS URL with your actual Vercel Backend URL
   // Example: "https://your-backend-project.vercel.app"
-  const BACKEND_URL = "https://vercel.com/nirmal-raajus-projects/ai-chatbot/Adm7pDoAWzQ2oUJzzrEtmNqptA4j";
+  const BACKEND_URL = "https://ai-chatbot-rho-azure.vercel.app/";
 
   // Auto-scroll to the bottom of the chat
   useEffect(() => {
