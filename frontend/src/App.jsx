@@ -11,35 +11,63 @@ function App() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
 
-  // 1. UPDATE THIS URL with your actual Vercel Backend URL
-  // Example: "https://your-backend-project.vercel.app"
-  const BACKEND_URL = "https://ai-chatbot-rho-azure.vercel.app/";
+  /**
+   * 1. BACKEND CONFIGURATION
+   * Ensure there is NO trailing slash at the end of this URL.
+   * Correct: "https://ai-chatbot-rho-azure.vercel.app"
+   * Incorrect: "https://ai-chatbot-rho-azure.vercel.app/" 
+   */
+  const BACKEND_URL = "https://ai-chatbot-rho-azure.vercel.app";
 
-  // Auto-scroll to the bottom of the chat
+  // Auto-scroll to the bottom of the chat whenever history updates
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, loading]);
 
   const handleChat = async () => {
     if (!input.trim() || loading) return;
+
     const currentMsg = input;
+    // Update UI with user message immediately
     setChatHistory(prev => [...prev, { role: "user", parts: [{ text: currentMsg }] }]);
     setInput("");
     setLoading(true);
 
     try {
-      // 2. Point to the live BACKEND_URL instead of 127.0.0.1
+      /**
+       * 2. API REQUEST
+       * We use a template literal to append /chat to the base URL.
+       * If BACKEND_URL has no slash, this correctly becomes ...app/chat
+       */
       const response = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: "user_1", message: currentMsg }),
+        headers: { 
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({ 
+          session_id: "user_1", 
+          message: currentMsg 
+        }),
       });
 
-      if (!response.ok) throw new Error("Network response was not ok");
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setChatHistory(prev => [...prev, { role: "model", parts: [{ text: data.response }] }]);
+      
+      // Update UI with model response
+      setChatHistory(prev => [...prev, { 
+        role: "model", 
+        parts: [{ text: data.response }] 
+      }]);
+
     } catch (error) {
-      setChatHistory(prev => [...prev, { role: "model", parts: [{ text: "Error: Could not connect to the server." }] }]);
+      console.error("Fetch Error:", error);
+      setChatHistory(prev => [...prev, { 
+        role: "model", 
+        parts: [{ text: "Error: Could not connect to the server. Please check your connection." }] 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -47,6 +75,7 @@ function App() {
 
   return (
     <div className="app-viewport">
+      {/* Top Branding Header */}
       <header className="brand-header">
         <svg className="brand-icon" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
@@ -54,17 +83,21 @@ function App() {
         <h1>Assistant</h1>
       </header>
 
+      {/* Main Chat Area */}
       <div className="center-container">
         <main className="chat-content">
           {chatHistory.map((msg, idx) => (
             <div key={idx} className={`message-row ${msg.role}`}>
               <div className="bubble">
+                {/* Markdown Support for Math and Formatting */}
                 <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                   {msg.parts[0].text}
                 </ReactMarkdown>
               </div>
             </div>
           ))}
+          
+          {/* Typing Indicator */}
           {loading && (
             <div className="message-row model">
               <div className="loader">
@@ -75,6 +108,7 @@ function App() {
           <div ref={scrollRef} />
         </main>
 
+        {/* Persistent Footer Input Area */}
         <footer className="input-sticky">
           <div className="input-bar">
             <input
