@@ -25,9 +25,9 @@ try:
     supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     # Initialize the new google-genai client
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    client = genai.Client(api_key=os.getenv("GROQ_API_KEY"))
     # Use gemini-2.0-flash for the latest features and stability
-    MODEL_ID = "gemini-2.0-flash"
+    MODEL_ID = "openai/gpt-oss-120b"
     
 except Exception as e:
     print(f"CRITICAL: System initialization failed: {e}")
